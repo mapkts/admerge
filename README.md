@@ -5,11 +5,11 @@
 
 A Rust library for merging files or in-memory buffers, featuring:
 
-- Easy file merging via [`FileMerger`](https://docs.rs/admerge/*/struct.FileMerger.html)
-- Easy in-memory buffer merging via [`RsMerger`](https://docs.rs/admerge/*/struct.RsMerger.html)
-- Skip unwanted contents of each merge unit from either start or end
-- Fill paddings before, between and/or after each merge unit
-- Force presences of ending newline after each merge unit.
+- Easy file merging via [`FileMerger`](https://docs.rs/admerge/*/admerge/struct.RsMerger.html).
+- Easy in-memory buffer merging via [`RsMerger`](https://docs.rs/admerge/*/admerge/struct.RsMerger.html).
+- Skip unwanted contents of each merge unit from either start or end.
+- Fill paddings before, between and/or after each merge unit.
+- Force presences of ending newlines after each merge unit.
 
 ## Usage
 
@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-admerge = "0.1.0"
+admerge = "0.1"
 ```
 
 To get started using `admerge`, see [documentation](https://docs.rs/admerge/).

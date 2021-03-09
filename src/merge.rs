@@ -884,7 +884,7 @@ impl<'a> FileMerger<'a> {
         self
     }
 
-    /// Open file paths given and merges file contents into the given writer according to the
+    /// Opens file paths given and merges file contents into the given writer according to the
     /// given configrations.
     ///
     /// Nothing that this method will return an error if any path given is not point to a regular
@@ -932,14 +932,14 @@ impl<'a> FileMerger<'a> {
         W: Write,
     {
         let sources: Result<Vec<_>> = paths
-            .into_iter()
-            .map(|p| File::open(p).map_err(|e| e.into()))
+            .into_iter().enumerate()
+            .map(|(i, p)| File::open(p).map_err(|_| ErrorKind::InvalidPath(i)))
             .collect();
 
         self.with_files(sources?, writer)
     }
 
-    /// Open every file path given if path points to a regular file, and then merges file contents
+    /// Opens every file path given if path points to a regular file, and then merges file contents
     /// into the given writer according to the given configrations.
     ///
     /// See also [`with_paths`].

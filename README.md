@@ -24,6 +24,6 @@ To get started using `admerge`, see [documentation](https://docs.rs/admerge/).
 
 ## License
 
-Rand is distributed under the terms of the MIT license.
+Admerge is distributed under the terms of the MIT license.
 
 See [LICENSE-MIT](LICENSE-MIT), and [COPYRIGHT](COPYRIGHT) for details.

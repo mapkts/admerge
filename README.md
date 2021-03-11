@@ -5,7 +5,7 @@
 
 A Rust library for merging files or in-memory buffers, featuring:
 
-- Easy file merging via [`FileMerger`](https://docs.rs/admerge/*/admerge/struct.RsMerger.html).
+- Easy file merging via [`FileMerger`](https://docs.rs/admerge/*/admerge/struct.FileMerger.html).
 - Easy in-memory buffer merging via [`RsMerger`](https://docs.rs/admerge/*/admerge/struct.RsMerger.html).
 - Skip unwanted contents of each merge unit from either start or end.
 - Fill paddings before, between and/or after each merge unit.

@@ -22,6 +22,8 @@ admerge = "0.1"
 
 To get started using `admerge`, see [documentation](https://docs.rs/admerge/).
 
+For an out-of-box cli that backed by this crate, see [fcc](https://github.com/mapkts/fcc).
+
 ## License
 
 Admerge is distributed under the terms of the MIT license.

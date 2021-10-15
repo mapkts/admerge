@@ -18,7 +18,9 @@ pub enum ErrorKind {
     NothingPassed,
 
     /// Occurs if the configured skip option is invalid.
-    #[error("the skip options given are not valid to apply to the given sources")]
+    #[error(
+        "the skip options given are not valid to apply to the given sources"
+    )]
     InvalidSkip,
 
     /// Occurs if the given path is not a valid file path.

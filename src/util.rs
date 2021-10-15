@@ -34,11 +34,11 @@ pub fn seek_end<S: Seek>(offset: i64, stream: &mut S) -> Result<u64> {
 /// position (the cursor position before calling this function).
 pub fn endswith_newline<RS: Seek + Read>(stream: &mut RS) -> Result<bool> {
     let pos = stream.seek(SeekFrom::Current(0))?;
-    let len = stream.seek(SeekFrom::End(0)).unwrap();
+    let len = stream.seek(SeekFrom::End(0))?;
     match len {
         0 => {
             stream.seek(SeekFrom::Start(pos))?;
-            return Ok(false);
+            Ok(false)
         }
         _ => {
             stream.seek(SeekFrom::End(-1)).unwrap();
@@ -48,7 +48,7 @@ pub fn endswith_newline<RS: Seek + Read>(stream: &mut RS) -> Result<bool> {
             if &buf == b"\n" {
                 return Ok(true);
             }
-            return Ok(false);
+            Ok(false)
         }
     }
 }

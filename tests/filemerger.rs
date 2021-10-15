@@ -58,11 +58,8 @@ fn with_paths_throws_if_given_invalid_paths() {
     let mut paths: Vec<&Path> = tempfiles.iter().map(|f| f.path()).collect();
     paths.push(tempdir.as_path());
     match merger.with_paths(paths.clone(), &mut buf) {
-        Err(e) => match e {
-            ErrorKind::InvalidPath(3) => assert!(true),
-            _ => assert!(false),
-        },
-        _ => assert!(false),
+        Err(e) => assert!(matches!(e, ErrorKind::InvalidPath(3))),
+        Ok(_) => panic!(),
     }
 }
 
@@ -129,33 +126,24 @@ fn skip_head_and_skip_tail() {
     merger.skip_tail(Skip::Lines(2));
     let mut buf = Vec::new();
     match merger.with_paths(paths.clone(), &mut buf) {
-        Err(e) => match e {
-            ErrorKind::InvalidSkip => assert!(true),
-            _ => assert!(false),
-        },
-        _ => assert!(false),
+        Err(e) => assert!(matches!(e, ErrorKind::InvalidSkip)),
+        _ => unreachable!(),
     }
 
     merger.skip_head(Skip::Lines(3));
     merger.skip_tail(Skip::Lines(1));
     let mut buf = Vec::new();
     match merger.with_paths(paths.clone(), &mut buf) {
-        Err(e) => match e {
-            ErrorKind::InvalidSkip => assert!(true),
-            _ => assert!(false),
-        },
-        _ => assert!(false),
+        Err(e) => assert!(matches!(e, ErrorKind::InvalidSkip)),
+        _ => unreachable!(),
     }
 
     merger.skip_head(Skip::Lines(1));
     merger.skip_tail(Skip::Lines(3));
     let mut buf = Vec::new();
     match merger.with_paths(paths.clone(), &mut buf) {
-        Err(e) => match e {
-            ErrorKind::InvalidSkip => assert!(true),
-            _ => assert!(false),
-        },
-        _ => assert!(false),
+        Err(e) => assert!(matches!(e, ErrorKind::InvalidSkip)),
+        _ => unreachable!(),
     }
 }
 

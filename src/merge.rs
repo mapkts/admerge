@@ -1,5 +1,4 @@
 //! Definition of various mergers.
-#![allow(unreachable_patterns)]
 
 use crate::error::{ErrorKind, Result};
 use crate::util;
@@ -361,7 +360,11 @@ impl<'a> RsMerger<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn merge_sources_into<RS, W>(&self, mut sources: Vec<RS>, writer: &mut W) -> Result<()>
+    pub fn merge_sources_into<RS, W>(
+        &self,
+        mut sources: Vec<RS>,
+        writer: &mut W,
+    ) -> Result<()>
     where
         RS: Read + Seek,
         W: Write,
@@ -374,15 +377,15 @@ impl<'a> RsMerger<'a> {
         // Merge first part.
         self.write_contents(&mut sources[0], writer, PartPos::Start)?;
         // Merge inner parts.
-        for i in 1..(len - 1) {
-            self.write_contents(&mut sources[i], writer, PartPos::Inside)?;
+        for mut source in sources.iter_mut().take(len - 1).skip(1) {
+            self.write_contents(&mut source, writer, PartPos::Inside)?;
         }
         // Merge last part.
         if len > 1 {
             self.write_contents(&mut sources[len - 1], writer, PartPos::End)?;
         }
 
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -397,7 +400,12 @@ enum PartPos {
 // Private methods
 impl<'a> RsMerger<'a> {
     // Writes the contents (entire or partial) of one part into the writer.
-    fn write_contents<RS, W>(&self, reader: &mut RS, writer: &mut W, pos: PartPos) -> Result<()>
+    fn write_contents<RS, W>(
+        &self,
+        reader: &mut RS,
+        writer: &mut W,
+        pos: PartPos,
+    ) -> Result<()>
     where
         RS: Read + Seek,
         W: Write,
@@ -534,14 +542,18 @@ impl<'a> RsMerger<'a> {
                         Skip::Until(bytes) => match seeker.seek(bytes) {
                             Ok(pos) => pos + bytes.len(),
                             Err(e) => match e.kind() {
-                                byteseeker::ErrorKind::ByteNotFound => stream_len,
+                                byteseeker::ErrorKind::ByteNotFound => {
+                                    stream_len
+                                }
                                 _ => return Err(e.into()),
                             },
                         },
                         Skip::Before(bytes) => match seeker.seek(bytes) {
                             Ok(pos) => pos,
                             Err(e) => match e.kind() {
-                                byteseeker::ErrorKind::ByteNotFound => stream_len,
+                                byteseeker::ErrorKind::ByteNotFound => {
+                                    stream_len
+                                }
                                 _ => return Err(e.into()),
                             },
                         },
@@ -550,7 +562,7 @@ impl<'a> RsMerger<'a> {
                             match width {
                                 0 => 0,
                                 _ => {
-                                    let mut buf = Vec::with_capacity(width);
+                                    let mut buf = vec![0; width];
                                     buf.resize(width, 0);
 
                                     let mut reader = seeker.get_mut();
@@ -558,7 +570,7 @@ impl<'a> RsMerger<'a> {
                                     let mut bytes_match = 0;
                                     loop {
                                         reader.read_exact(&mut buf)?;
-                                        if &buf == bytes {
+                                        if buf == bytes {
                                             bytes_match += width;
                                             if bytes_match == stream_len {
                                                 break;
@@ -572,7 +584,6 @@ impl<'a> RsMerger<'a> {
                                 }
                             }
                         }
-                        _ => unimplemented!(),
                     },
                 };
 
@@ -696,8 +707,7 @@ impl<'a> RsMerger<'a> {
                             match width {
                                 0 => stream_len,
                                 _ => {
-                                    let mut buf = Vec::with_capacity(width);
-                                    buf.resize(width, 0);
+                                    let mut buf = vec![0; width];
 
                                     let mut reader = seeker.get_mut();
                                     util::seek_to_end(&mut reader)?;
@@ -707,9 +717,12 @@ impl<'a> RsMerger<'a> {
                                         if bytes_match + width > stream_len {
                                             break;
                                         }
-                                        util::seek_end(-((bytes_match + width) as i64), reader)?;
+                                        util::seek_end(
+                                            -((bytes_match + width) as i64),
+                                            reader,
+                                        )?;
                                         reader.read_exact(&mut buf)?;
-                                        if &buf == bytes {
+                                        if buf == bytes {
                                             bytes_match += width;
                                             if bytes_match == stream_len {
                                                 break;
@@ -737,7 +750,10 @@ impl<'a> RsMerger<'a> {
                             _ => {
                                 let mut buf_reader = BufReader::new(reader);
                                 let mut read = 0;
-                                util::seek_start(start as u64, &mut buf_reader)?;
+                                util::seek_start(
+                                    start as u64,
+                                    &mut buf_reader,
+                                )?;
 
                                 loop {
                                     let buf = buf_reader.fill_buf()?;
@@ -749,12 +765,11 @@ impl<'a> RsMerger<'a> {
                                         let mut buffer = buf.to_owned();
                                         buffer.truncate(bytes_count - read);
                                         writer.write_all(&buffer)?;
-                                        buf_reader.consume(length);
                                     } else {
                                         read += length;
                                         writer.write_all(buf)?;
-                                        buf_reader.consume(length);
                                     }
+                                    buf_reader.consume(length);
                                 }
                             }
                         }
@@ -784,7 +799,11 @@ impl<'a> RsMerger<'a> {
         Ok(())
     }
 
-    fn write_padding_before<W: Write>(&self, writer: &mut W, pos: PartPos) -> Result<()> {
+    fn write_padding_before<W: Write>(
+        &self,
+        writer: &mut W,
+        pos: PartPos,
+    ) -> Result<()> {
         if let Some(pad) = &self.opts.padding {
             // Check if padding should be filled before this source.
             match (pad, pos) {
@@ -801,7 +820,11 @@ impl<'a> RsMerger<'a> {
         Ok(())
     }
 
-    fn write_padding_after<W: Write>(&self, writer: &mut W, pos: PartPos) -> Result<()> {
+    fn write_padding_after<W: Write>(
+        &self,
+        writer: &mut W,
+        pos: PartPos,
+    ) -> Result<()> {
         if let Some(pad) = &self.opts.padding {
             // Check if padding should be filled before this source.
             match (pad, pos) {
@@ -884,10 +907,10 @@ impl<'a> FileMerger<'a> {
         self
     }
 
-    /// Opens file paths given and merges file contents into the given writer according to the
+    /// Opens the given file paths and merges file contents into the given writer according to the
     /// given configrations.
     ///
-    /// Nothing that this method will return an error if any path given is not point to a regular
+    /// Noting that this method will return an error if any path given is not point to a regular
     /// file. For an variant that ignores invalid paths, see [`with_paths_lossy`].
     ///
     /// # Example
@@ -932,8 +955,14 @@ impl<'a> FileMerger<'a> {
         W: Write,
     {
         let sources: Result<Vec<_>> = paths
-            .into_iter().enumerate()
-            .map(|(i, p)| File::open(p).map_err(|_| ErrorKind::InvalidPath(i)))
+            .into_iter()
+            .enumerate()
+            .map(|(i, p)| {
+                if !p.as_ref().is_file() {
+                    return Err(ErrorKind::InvalidPath(i));
+                }
+                File::open(p).map_err(ErrorKind::Io)
+            })
             .collect();
 
         self.with_files(sources?, writer)
@@ -977,13 +1006,18 @@ impl<'a> FileMerger<'a> {
     /// Returns an error variant of [`ErrorKind::Io`] if any I/O errors were encountered.
     ///
     /// [`with_paths`]: FileMerger::with_paths
-    pub fn with_paths_lossy<P, W>(&self, paths: Vec<P>, writer: &mut W) -> Result<()>
+    pub fn with_paths_lossy<P, W>(
+        &self,
+        paths: Vec<P>,
+        writer: &mut W,
+    ) -> Result<()>
     where
         P: AsRef<Path>,
         W: Write,
     {
         // Dumps any path that does not point to a regular file..
-        let sources: Vec<_> = paths.into_iter().filter(|p| p.as_ref().is_file()).collect();
+        let sources: Vec<_> =
+            paths.into_iter().filter(|p| p.as_ref().is_file()).collect();
 
         self.with_paths(sources, writer)
     }
